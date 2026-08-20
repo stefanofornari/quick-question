@@ -1,0 +1,20 @@
+.provider-container {
+    -fx-background-color: derive(#d7e6cb, +30%);
+}
+
+.provider-button {
+    -fx-background-color: #d7e6cb;
+    -fx-text-fill: white;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 8, 0, 3, 3);
+}
+
+.provider-button:hover {
+    -fx-background-color: derive(#d7e6cb, -30%);
+}
+
+.provider-button:pressed {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 4, 0, 1, 1);
+}
