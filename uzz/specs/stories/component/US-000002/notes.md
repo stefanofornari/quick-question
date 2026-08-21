@@ -43,9 +43,14 @@ Implementation of the user story [US-000002] Select an LLM from a preconfigured 
 - **Rationale:** Tests mock the scripts by providing a temporary `binDir` with stub scripts; no real browser or VNC session is needed for unit tests.
 
 ### Script Contracts
-- `launch-browser.sh <display> <pid-file> <url>`: launches the first available browser (`firefox`, `chromium`, `google-chrome`, `google-chrome-stable`, `chromium-browser`) in kiosk mode on the given display, writes the browser PID to `pid-file`.
-- `navigate-browser.sh <display> <pid-file> <url>`: re-invokes the detected browser binary on the same display with the new URL (singleton browsers open the URL in the existing kiosk instance).
-- `stop-browser.sh <pid-file>`: terminates the browser process recorded in the pid file and removes it.
+- `launch-browser.sh <url> [--display <display>] [--pid-file <pid-file>] [--profile-dir <profile-dir>] [--browser-bin <browser-bin>] [--geometry <WxH>] [--dry-run]`: launches the first available browser in kiosk mode on the given display, writes the browser PID to `pid-file`. `--geometry` is translated per browser family (Firefox: `--width`/`--height`; Chromium: `--window-position 0,0 --window-size=W+1,H+1`). Default geometry is `600x800`.
+- `navigate-browser.sh <url> [--display <display>] [--pid-file <pid-file>] [--profile-dir <profile-dir>] [--browser-bin <browser-bin>]`: re-invokes the detected browser binary on the same display with the new URL. Does NOT use `--new-instance` (Firefox) or `--new-window` (Chromium) to avoid profile-lock errors; instead lets the browser handle the already-running case in its default way.
+- `stop-browser.sh <pid-file>`: cleanup hook; actual process termination is handled by `WebChatService.stop()` via `ProcessHandle.destroy()` / `destroyForcibly()`.
+
+### Browser Process Management (updated)
+- `WebChatService` owns the browser lifecycle in Java.
+- `stop()` performs a graceful tree kill: snapshot descendants, send SIGTERM to all, wait up to 10s, escalate to SIGKILL if needed.
+- `redirect()` no longer pre-kills the existing browser before launching a new instance. Rationale: Firefox profile lock makes kill-then-relaunch unreliable; also `--new-instance`/`--new-window` cause the same lock error. Multiple tabs may accumulate; tab cleanup is deferred to future work.
 
 ### Testability
 - The `ProcessAliveChecker` abstraction allows tests to stub liveness checks without relying on real OS processes, avoiding sandbox/container restrictions on backgrounded child processes.

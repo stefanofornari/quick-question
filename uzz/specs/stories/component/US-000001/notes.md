@@ -2,7 +2,7 @@
 
 ## Technical Decisions
 - Implement the component (WebChat) as a reusable JavaFX control that owns a
-  a VNCViewer connecting to a local VNC server running the browser
+  VNCViewer connecting to a local VNC server running the browser
 - This solution is the result of exploring many alternatives, none able to fulfil
   all requirements or constraints. In particular:
   - JavaFX Web view: bundled with JavaFX 23 (but even 25) embeds a not enough
@@ -21,8 +21,16 @@
       application and the author does not seem interested in making a JavaFX or
       swing component out of it.
     - We
-- Add an explicit `onDisplayed()` hook so the host application can trigger the initial navigation when the component becomes visible.
-- Represent navigation failure with a lightweight in-component label instead of throwing exceptions.
+- The component embeds a VNC viewer (`VNCViewerFX`) that connects to a local
+  VNC server (e.g. `:5`). The actual browser runs on that display, managed
+  by `WebChatService` via shell scripts.
+- `WebChatService` handles browser lifecycle: launch, redirect, stop. It
+  delegates platform-specific work to scripts but keeps process management
+  (PID tracking, graceful kill) in Java for cross-platform portability.
+- Scripts use named options (`--display`, `--pid-file`, `--profile-dir`,
+  `--browser-bin`, `--geometry`, `--dry-run`) for clarity and robustness.
+- Navigation failure is represented with a lightweight in-component label
+  instead of throwing exceptions.
 - Keep navigation logic separate from configuration loading where practical.
 - Use a small API surface so the component can be embedded in host JavaFX applications.
 
