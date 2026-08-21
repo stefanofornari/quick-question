@@ -8,7 +8,7 @@
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="ste.ai.qq.demo.QuickQuestionDemoController">
     <BorderPane AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
         <top>
-            <CustomTitleBar fx:id="titleBar" title="QuicQuestion Demo"/>
+            <CustomTitleBar fx:id="titleBar" title="QuickQuestion Demo"/>
         </top>
         <center>
             <WebChat fx:id="webChat"/>

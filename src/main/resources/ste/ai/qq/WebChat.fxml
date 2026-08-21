@@ -4,10 +4,10 @@
 <?import ste.vnc.viewer.VNCViewer?>
 
 <fx:root
-    xmlns:fx="http://javafx.com/fxml/1"
+    xmlns:fx="http://javafx.com/javafx/1"
     fx:controller="ste.ai.qq.WebChatController"
-    type="HBox" fillHeight="true"
+    type="HBox" fillHeight="false"
 >
     <fx:include fx:id="providerPane" source="ProviderPane.fxml"/>
-    <VNCViewer fx:id="viewer" connect="AUTO" uri="vnc://localhost:5905"></VNCViewer>
+    <VNCViewer fx:id="viewer" connect="AUTO" uri="vnc://localhost:5905" prefWidth="600" prefHeight="800"/>
 </fx:root>

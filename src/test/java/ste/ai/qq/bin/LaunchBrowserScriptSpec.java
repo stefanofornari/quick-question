@@ -50,7 +50,7 @@ class LaunchBrowserScriptSpec {
         target.toFile().setExecutable(true);
     }
 
-    private ProcessResult runScript(final Path scratch, final String... extraArgs) throws Exception {
+    private ProcessResult runScript(final Path scratch, final String url, final String... extraArgs) throws Exception {
         final Path script = extractLaunchScript(scratch);
 
         final Path fakeBin = scratch.resolve("bin");
@@ -63,10 +63,17 @@ class LaunchBrowserScriptSpec {
         Files.createDirectories(appsDir);
         copyHarnessResource(scratch, "share/applications/google-chrome.desktop", appsDir.resolve("google-chrome.desktop"));
 
+        final Path profileDir = scratch.resolve("profile");
+
         final List<String> command = new ArrayList<>();
         command.add(script.toString());
+        command.add(url);
+        command.add("--display");
         command.add(":5");
+        command.add("--pid-file");
         command.add(scratch.resolve("browser.pid").toString());
+        command.add("--profile-dir");
+        command.add(profileDir.toString());
         for (final String arg : extraArgs) {
             command.add(arg);
         }
@@ -87,12 +94,12 @@ class LaunchBrowserScriptSpec {
     void dry_run_with_chrome_desktop_produces_kiosk_command(@TempDir final Path scratch) throws Exception {
         final ProcessResult result = runScript(scratch, "https://example.com", "--dry-run");
         then(result.exitCode).isZero();
-        then(result.output).contains("google-chrome").contains("--kiosk").contains("https://example.com");
+        then(result.output).contains("google-chrome").contains("--kiosk").contains("--user-data-dir").contains("google-chrome-profile").contains("https://example.com");
     }
 
     @Test
     void missing_url_returns_non_zero_exit(@TempDir final Path scratch) throws Exception {
-        final ProcessResult result = runScript(scratch);
+        final ProcessResult result = runScript(scratch, "", "--dry-run");
         then(result.exitCode).isNotZero();
         then(result.output).contains("url required");
     }
@@ -108,6 +115,20 @@ class LaunchBrowserScriptSpec {
         final int exitCode = process.waitFor();
         then(exitCode).isZero();
         then(output).contains("Usage:");
+    }
+
+    @Test
+    void geometry_with_chrome_dry_run_adds_window_size_and_position(@TempDir final Path scratch) throws Exception {
+        final ProcessResult result = runScript(scratch, "https://example.com", "--geometry", "600x800", "--dry-run");
+        then(result.exitCode).isZero();
+        then(result.output).contains("google-chrome").contains("--window-size=601").contains("--window-position").contains("https://example.com");
+    }
+
+    @Test
+    void invalid_geometry_returns_non_zero_exit(@TempDir final Path scratch) throws Exception {
+        final ProcessResult result = runScript(scratch, "https://example.com", "--geometry", "600", "--dry-run");
+        then(result.exitCode).isNotZero();
+        then(result.output).contains("invalid --geometry");
     }
 
     private record ProcessResult(int exitCode, String output) {

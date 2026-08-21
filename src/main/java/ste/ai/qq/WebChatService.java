@@ -15,22 +15,30 @@
  */
 package ste.ai.qq;
 
+import dev.dirs.BaseDirectories;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  * Launches, redirects, and tracks the system default browser on the VNC
  * shared display.
  *
  * <p>The service delegates the platform-specific work to scripts bundled as
- * classpath resources under {@code ste/ai/qq/bin/}. At runtime, the scripts
- * are extracted once to a temporary directory and executed from there.</p>
+ * classpath resources under {@code bin/}. At runtime, the scripts are
+ * extracted to the user data directory at {@code <dataDir>/quickquestion/bin}
+ * and executed from there.</p>
  */
 public class WebChatService {
 
@@ -46,25 +54,52 @@ public class WebChatService {
     private final Path binDir;
     private final Path pidFile;
     private final String display;
+    private final Path profileDir;
+    private final Path forcedBrowserBin;
     private final ProcessAliveChecker aliveChecker;
+    private String geometry = "600x800";
 
     /**
      * Creates a service using scripts extracted from classpath resources,
-     * the default PID file location, and the default VNC display {@code :5}.
+     * the default PID file location, the default VNC display {@code :5},
+     * and a dedicated browser profile under the user data directory.
      */
     public WebChatService() {
-        this(extractResourceScripts(), defaultPidFile(), ":5", ProcessAliveChecker.defaultChecker());
+        this(extractResourceScripts(), defaultPidFile(), ":5", defaultProfileDir(), ProcessAliveChecker.defaultChecker(), null);
     }
 
-    WebChatService(final Path binDir, final Path pidFile, final String display) {
-        this(binDir, pidFile, display, ProcessAliveChecker.defaultChecker());
+    protected WebChatService(final Path binDir, final Path pidFile, final String display) {
+        this(binDir, pidFile, display, defaultProfileDir(), ProcessAliveChecker.defaultChecker(), null);
     }
 
-    WebChatService(final Path binDir, final Path pidFile, final String display, final ProcessAliveChecker aliveChecker) {
+    protected WebChatService(final Path binDir, final Path pidFile, final String display, final ProcessAliveChecker aliveChecker) {
+        this(binDir, pidFile, display, defaultProfileDir(), aliveChecker, null);
+    }
+
+    protected WebChatService(final Path binDir, final Path pidFile, final String display, final Path profileDir, final ProcessAliveChecker aliveChecker) {
+        this(binDir, pidFile, display, profileDir, aliveChecker, null);
+    }
+
+    protected WebChatService(final Path binDir, final Path pidFile, final String display, final Path profileDir, final ProcessAliveChecker aliveChecker, final Path forcedBrowserBin) {
         this.binDir = binDir;
         this.pidFile = pidFile;
         this.display = display;
+        this.profileDir = profileDir;
         this.aliveChecker = aliveChecker;
+        this.forcedBrowserBin = forcedBrowserBin;
+    }
+
+    /**
+     * Sets the initial browser window geometry.
+     *
+     * <p>The value must be in {@code WxH} form, e.g. {@code 600x800}.
+     * If not set, the service defaults to {@code 600x800}.</p>
+     *
+     * @param geometry the geometry string, or {@code null}/blank to omit
+     *     geometry and let the browser use its own default size
+     */
+    public void setGeometry(final String geometry) {
+        this.geometry = geometry;
     }
 
     /**
@@ -117,32 +152,87 @@ public class WebChatService {
      * @throws WebChatException if the pid file cannot be removed
      */
     public void stop() throws WebChatException {
-        if (!isRunning()) {
-            log.finest("stop: browser not running");
-            return;
-        }
         log.finest("stop: stopping browser");
+        try {
+            killExisting().get(10, TimeUnit.SECONDS);
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new WebChatException("Interrupted while waiting for browser to stop", e);
+        } catch (final ExecutionException e) {
+            throw new WebChatException("Failed to stop browser", e.getCause());
+        } catch (final java.util.concurrent.TimeoutException e) {
+            throw new WebChatException("Timed out waiting for browser to stop", e);
+        } finally {
+            try {
+                Files.deleteIfExists(pidFile);
+            } catch (final IOException e) {
+                throw new WebChatException("Failed to remove pid file: " + pidFile, e);
+            }
+        }
+    }
+
+    private CompletableFuture<Void> killExisting() {
+        if (!isRunning()) {
+            return CompletableFuture.completedFuture(null);
+        }
+        log.finest("killExisting: stopping browser");
         try {
             final String content = Files.readString(pidFile).trim();
             final long pid = Long.parseLong(content);
-            ProcessHandle.of(pid).ifPresent(handle -> {
-                if (!handle.destroy()) {
-                    handle.destroyForcibly();
-                }
-            });
+            final ProcessHandle handle = ProcessHandle.of(pid).orElse(null);
+            if (handle == null) {
+                return CompletableFuture.completedFuture(null);
+            }
+            return stopProcessTreeGracefullyAsync(handle, 5);
         } catch (final IOException | NumberFormatException e) {
-            log.fine(() -> "stop: failed to read pid for kill: " + e.getMessage());
+            log.fine(() -> "killExisting: failed to read pid for kill: " + e.getMessage());
+            return CompletableFuture.completedFuture(null);
         }
-        try {
-            Files.deleteIfExists(pidFile);
-        } catch (final IOException e) {
-            throw new WebChatException("Failed to remove pid file: " + pidFile, e);
-        }
+    }
+
+    private static CompletableFuture<Void> stopProcessTreeGracefullyAsync(ProcessHandle rootHandle, long timeoutSeconds) {
+        List<ProcessHandle> allHandles = Stream.concat(
+                rootHandle.descendants(),
+                Stream.of(rootHandle)
+        ).toList();
+
+        allHandles.forEach(ProcessHandle::destroy);
+
+        CompletableFuture<?>[] exitFutures = allHandles.stream()
+                .map(ProcessHandle::onExit)
+                .toArray(CompletableFuture[]::new);
+
+        return CompletableFuture.allOf(exitFutures)
+                .orTimeout(timeoutSeconds, TimeUnit.SECONDS)
+                .exceptionallyCompose(ex -> {
+                    allHandles.stream()
+                              .filter(ProcessHandle::isAlive)
+                              .forEach(process -> log.finest("not closed: " + process));
+
+                    return CompletableFuture.completedFuture(null);
+                })
+                ;
     }
 
     private void launch(final URL url) throws WebChatException {
         log.finest(() -> "launch: " + url);
-        execute(LAUNCH_SCRIPT, display, pidFile.toString(), url.toExternalForm());
+        final List<String> args = new ArrayList<>();
+        args.add(url.toExternalForm());
+        args.add("--display");
+        args.add(display);
+        args.add("--pid-file");
+        args.add(pidFile.toString());
+        args.add("--profile-dir");
+        args.add(profileDir.toString());
+        if (forcedBrowserBin != null) {
+            args.add("--browser-bin");
+            args.add(forcedBrowserBin.toString());
+        }
+        if (geometry != null && !geometry.isBlank()) {
+            args.add("--geometry");
+            args.add(geometry);
+        }
+        execute(LAUNCH_SCRIPT, args.toArray(new String[0]));
         if (!Files.isRegularFile(pidFile)) {
             throw new WebChatException("Launch script did not create pid file: " + pidFile);
         }
@@ -150,20 +240,34 @@ public class WebChatService {
 
     private void redirect(final URL url) throws WebChatException {
         log.finest(() -> "redirect: " + url);
-        execute(NAVIGATE_SCRIPT, display, pidFile.toString(), url.toExternalForm());
+        final List<String> args = new ArrayList<>();
+        args.add(url.toExternalForm());
+        args.add("--display");
+        args.add(display);
+        args.add("--pid-file");
+        args.add(pidFile.toString());
+        args.add("--profile-dir");
+        args.add(profileDir.toString());
+        if (forcedBrowserBin != null) {
+            args.add("--browser-bin");
+            args.add(forcedBrowserBin.toString());
+        }
+        execute(NAVIGATE_SCRIPT, args.toArray(new String[0]));
+        if (!Files.isRegularFile(pidFile)) {
+            throw new WebChatException("Navigate script did not create pid file: " + pidFile);
+        }
     }
 
     private void execute(final String scriptName, final String... args) throws WebChatException {
         final Path script = binDir.resolve(scriptName);
         final List<String> command = command(script, args);
+        log.finest(() -> "command: " + command);
         try {
             final ProcessBuilder pb = new ProcessBuilder(command);
-            pb.redirectErrorStream(true);
             final Process process = pb.start();
-            final String output = new String(process.getInputStream().readAllBytes()).trim();
             final int exitCode = process.waitFor();
             if (exitCode != 0) {
-                throw new WebChatException(scriptName + " failed (exit " + exitCode + "): " + output);
+                throw new WebChatException(scriptName + " failed (exit " + exitCode + ")");
             }
         } catch (final IOException e) {
             throw new WebChatException("Failed to execute " + scriptName + ": " + e.getMessage(), e);
@@ -202,21 +306,24 @@ public class WebChatService {
 
     private static Path doExtractResourceScripts() {
         try {
-            final Path tempDir = Files.createTempDirectory("quickquestion-scripts-");
+            final Path targetDir = Path.of(BaseDirectories.get().dataDir).resolve("quickquestion").resolve("bin");
+            Files.createDirectories(targetDir);
             final String[] scripts = {LAUNCH_SCRIPT, NAVIGATE_SCRIPT, STOP_SCRIPT};
             final ClassLoader cl = WebChatService.class.getClassLoader();
             for (final String script : scripts) {
-                final String resourcePath = SCRIPTS_RESOURCE_PREFIX + script;
-                try (final InputStream is = cl.getResourceAsStream(resourcePath)) {
-                    if (is == null) {
-                        throw new WebChatException("Missing script resource: " + resourcePath);
+                final Path target = targetDir.resolve(script);
+                if (Files.notExists(target)) {
+                    final String resourcePath = SCRIPTS_RESOURCE_PREFIX + script;
+                    try (final InputStream is = cl.getResourceAsStream(resourcePath)) {
+                        if (is == null) {
+                            throw new WebChatException("Missing script resource: " + resourcePath);
+                        }
+                        Files.copy(is, target);
                     }
-                    final Path target = tempDir.resolve(script);
-                    Files.copy(is, target);
-                    target.toFile().setExecutable(true);
                 }
+                target.toFile().setExecutable(true);
             }
-            return tempDir;
+            return targetDir;
         } catch (final IOException e) {
             throw new WebChatException("Failed to extract scripts from resources", e);
         }
@@ -224,6 +331,16 @@ public class WebChatService {
 
     private static Path defaultPidFile() {
         return Path.of(System.getProperty("java.io.tmpdir"), "quickquestion", "browser.pid");
+    }
+
+    private static Path defaultProfileDir() {
+        final Path dir = Path.of(BaseDirectories.get().dataDir).resolve("quickquestion");
+        try {
+            Files.createDirectories(dir);
+        } catch (final IOException e) {
+            throw new WebChatException("Failed to create browser profile directory: " + dir, e);
+        }
+        return dir;
     }
 
     @FunctionalInterface

@@ -48,13 +48,35 @@ class WebChatServiceSpec {
         Files.createDirectories(binDir);
         pidFile = scratch.resolve("browser.pid");
         writeScript(binDir, "launch-browser.sh",
-            "echo launched > \"${2}.launched\"\n" +
-            "echo 42 > \"$2\"\n");
+            "PID_FILE=\"\"\n" +
+            "while [[ $# -gt 0 ]]; do\n" +
+            "  case \"$1\" in\n" +
+            "    --pid-file) PID_FILE=\"$2\"; shift 2 ;;\n" +
+            "    *) shift ;;\n" +
+            "  esac\n" +
+            "done\n" +
+            "echo launched > \"${PID_FILE}.launched\"\n" +
+            "echo 999999999 > \"$PID_FILE\"\n");
         writeScript(binDir, "navigate-browser.sh",
-            "echo navigated > \"${2}.navigated\"\n" +
+            "PID_FILE=\"\"\n" +
+            "while [[ $# -gt 0 ]]; do\n" +
+            "  case \"$1\" in\n" +
+            "    --pid-file) PID_FILE=\"$2\"; shift 2 ;;\n" +
+            "    *) shift ;;\n" +
+            "  esac\n" +
+            "done\n" +
+            "echo navigated > \"${PID_FILE}.navigated\"\n" +
+            "echo 999999999 > \"$PID_FILE\"\n" +
             "exit 0\n");
         writeScript(binDir, "stop-browser.sh",
-            "rm -f \"$1\"\n");
+            "PID_FILE=\"\"\n" +
+            "while [[ $# -gt 0 ]]; do\n" +
+            "  case \"$1\" in\n" +
+            "    --pid-file) PID_FILE=\"$2\"; shift 2 ;;\n" +
+            "    *) shift ;;\n" +
+            "  esac\n" +
+            "done\n" +
+            "rm -f \"$PID_FILE\"\n");
         service = new WebChatService(binDir, pidFile, ":5", pid -> true);
     }
 

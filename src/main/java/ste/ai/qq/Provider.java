@@ -23,8 +23,10 @@ package ste.ai.qq;
  */
 
 public enum Provider {
-    ANTHROPIC_CLAUDE("Anthropic Claude", "https://claude.ai"),
     CHAT_GPT("ChatGPT", "https://chatgpt.com"),
+    ANTHROPIC_CLAUDE("Anthropic Claude", "https://claude.ai"),
+    GEMINI("Gemini", "https://gemini.google.com"),
+    MISTRAL("Mistral", "https://chat.mistral.ai/chat"),
     PERPLEXITY("Perplexity", "https://www.perplexity.ai");
 
     public final String displayName;
