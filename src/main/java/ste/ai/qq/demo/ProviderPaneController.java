@@ -15,6 +15,7 @@
  */
 package ste.ai.qq.demo;
 
+import java.util.logging.Logger;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.event.ActionEvent;
@@ -24,6 +25,8 @@ import javafx.stage.Stage;
  * Controller for the provider selection pane.
  */
 public class ProviderPaneController {
+
+    private Logger log = Logger.getLogger(getClass().getName());
 
     @FXML
     private Button gptButton;
@@ -39,6 +42,12 @@ public class ProviderPaneController {
 
     @FXML
     private Button perplexityButton;
+
+    @FXML
+    private void initialize() {
+        log.finest(() -> "initializing the controller");
+        log.finest(() -> "controller initialized");
+    }
 
     @FXML
     private void onSwitch(ActionEvent event) {

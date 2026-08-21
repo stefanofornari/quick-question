@@ -15,37 +15,35 @@
  */
 package ste.ai.qq;
 
-import java.util.Objects;
+import java.io.IOException;
+import java.net.URL;
+import java.util.logging.Logger;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.layout.HBox;
 
 /**
- * Represents a selectable LLM endpoint entry.
+ * .
  */
-public record WebChat(String name, String url, boolean googleLogin) {
+public class WebChat extends HBox {
 
-    /**
-     * Creates a new LLM entry.
-     *
-     * @param name the display name
-     * @param url the navigation URL
-     * @param googleLogin whether Google login is supported
-     */
-    public WebChat {
-        Objects.requireNonNull(name, "name must not be null");
-        Objects.requireNonNull(url, "url must not be null");
+    final Logger log = Logger.getLogger(getClass().getName());
+
+    public final WebChatController controller;
+
+    public WebChat() {
+        log.finest(() -> "creating a new component");
+        final URL url = getClass().getResource("WebChat.fxml");
+        FXMLLoader fxmlLoader = new FXMLLoader(url);
+        fxmlLoader.setRoot(this);
+
+        try {
+            fxmlLoader.load();
+            // Retrieve the controller instance created by FXMLLoader
+            this.controller = fxmlLoader.getController();
+        } catch (IOException exception) {
+            throw new RuntimeException("Failed to load " + url, exception);
+        }
+        log.finest(() -> "component created");
     }
 
-    /**
-     * Creates a new LLM entry with Google login supported by default.
-     *
-     * @param name the display name
-     * @param url the navigation URL
-     */
-    public WebChat(String name, String url) {
-        this(name, url, true);
-    }
-
-    @Override
-    public String toString() {
-        return name;
-    }
 }

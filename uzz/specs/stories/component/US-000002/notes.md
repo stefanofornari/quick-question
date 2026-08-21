@@ -1,44 +1,56 @@
 # US-000002 Implementation Notes
 
 ## Overview
-Implementation of the user story "Select an LLM from a configured list".
+Implementation of the user story [US-000002] Select an LLM from a preconfigured list
 
 ## Technical Decisions
 
-### Selection Handling Mechanism
-- **Problem:** The original implementation used `ComboBox.setOnAction(...)` to handle selection changes. This event only fires on user interaction and not on programmatic selection changes made via `getSelectionModel().select(...)`.
-- **Decision:** Replaced `setOnAction` with a `ChangeListener` on `selector.getSelectionModel().selectedItemProperty()`. This fires for both user and programmatic selection changes, making the component behavior predictable and testable.
+### Native Browser
+- **Problem:** How to we navigate to the provider url and show the chat web site?
+- **Decision:** We use VNCViewerFX, which means a FX component that shows and
+  interacts with a remote desktop. This means that there is a VNCServer runnign
+  on the local machine (for now) and the viewer embedded in teh QuickQuestion
+  UI. When a provider is selected:
+  - if no browser has been already launched, a new browser is launched in the screeen
+    shared by the VNCServer (e.g. :5) and its pid is saved in the system tmp folder
+  - if a browser as already launched - either for the same or another provider,
+    the browser is redirected to the provider Web Chat site.
 
-### Auto-Select Behavior
-- **Problem:** `setEntries(...)` originally auto-selected the first item, which implicitly triggered navigation. This blurred the line between configuration loading (US-000003) and user selection (US-000002).
-- **Decision:** Removed the auto-select logic from `setEntries(...)`. Population of the selector is now purely a data operation. Initial navigation is handled by `onDisplayed()`.
+### Browser Process Management
+- **Problem:** How to we launch and manage browser's process?
+- **Decision:** WebChatService
+  - Create a WebChatService class that run systemprocesses as needed
+  - WebChatService shall also be able to track and detect the current status (e.g.
+    save/retrieve PID, retrieve if the process is running, etc...)
+  - Build as much as possible the logic in the service for the sake of platform
+    independency, but use system scripts whenever appropriate
+  - WebChatService shall spawn the default browser configured on the system
+  - The browser shall be launched in full-screen kiosk mode
 
-### Initial Navigation
-- **Decision:** Refactored `onDisplayed()` to:
-  - Load the explicit `defaultUrl` when provided (US-000001 behavior).
-  - Otherwise, select the first configured entry, which triggers the selection listener and navigates to its URL.
-- **Rationale:** This keeps initial page loading and user selection navigation flowing through the same mechanism, keeping the selector and webview in sync.
+### Target Systems:
+- **Problem:** Which operating systems shall be supported
+- **Solution** Linux only for now
 
-## Edge Cases Handled
-- **Empty configuration:** `onDisplayed()` does nothing; selector remains empty; webview remains on its current (blank) page; failure label stays hidden.
-- **Invalid URL:** Navigation failure state is still shown via the existing `navigateTo(...)` logic.
-- **No default URL with entries:** The first entry is selected and its URL is loaded.
+### WebChatService Implementation
+- **Problem:** How to keep browser process management platform-independent while still leveraging native capabilities?
+- **Decision:** WebChatService owns the browser lifecycle entirely in Java but delegates actual browser launching, navigation, and termination to bash scripts in a configurable `binDir`.
+  - Default `binDir` is resolved via `dev.dirs` (`BaseDirectories.get().configDir`) as `<configDir>/quickquestion/bin`.
+  - Default PID file lives under the system tmp dir: `<tmpDir>/quickquestion/browser.pid`.
+  - Default VNC display is `:5`, configurable via constructor.
+  - `navigateTo(URL)` launches the browser if `isRunning()` is false, otherwise redirects.
+  - `isRunning()` checks the PID file and delegates liveness to a `ProcessAliveChecker` (defaults to `ProcessHandle`), making the service fully testable without real browser processes.
+  - `stop()` invokes the stop script and clears the PID file.
+- **Rationale:** Tests mock the scripts by providing a temporary `binDir` with stub scripts; no real browser or VNC session is needed for unit tests.
 
-## Files Modified
-- `src/test/java/ste/ai/qq/WebChatViewTest.java` — added acceptance-criteria tests.
-- `src/main/java/ste/ai/qq/WebChatView.java` — refactored selection handling and initial navigation.
+### Script Contracts
+- `launch-browser.sh <display> <pid-file> <url>`: launches the first available browser (`firefox`, `chromium`, `google-chrome`, `google-chrome-stable`, `chromium-browser`) in kiosk mode on the given display, writes the browser PID to `pid-file`.
+- `navigate-browser.sh <display> <pid-file> <url>`: re-invokes the detected browser binary on the same display with the new URL (singleton browsers open the URL in the existing kiosk instance).
+- `stop-browser.sh <pid-file>`: terminates the browser process recorded in the pid file and removes it.
 
-## Test Results
-- `WebChatViewTest`: 4/4 passing.
-- `DemoViewControllerTest`: 3/3 passing.
-- `WebChatViewControllerTest`: 1/1 passing.
-- **Total: 8/8 passing.**
+### Testability
+- The `ProcessAliveChecker` abstraction allows tests to stub liveness checks without relying on real OS processes, avoiding sandbox/container restrictions on backgrounded child processes.
+- Mock scripts write marker files (`*.launched`, `*.navigated`) alongside the pid file so tests can assert which script was invoked.
 
-## Network Isolation
-- Added WireMock (`org.wiremock:wiremock:3.9.1`) as a test dependency.
-- Refactored `WebChatViewTest` to use local WireMock URLs instead of real LLM sites.
-- Updated `uzz/specs/development-framework.md` to mandate WireMock for external HTTP stubs in tests.
-
-## Trade-offs
-- Programmatic selection now also triggers navigation. This is desirable for testability and consistency but means callers should be aware that `select(...)` on the selector will load the corresponding URL.
-- The selector selection is only updated on `onDisplayed()` when no default URL is provided. When a default URL is provided that does not match any entry, the selector shows no selection while the webview loads the default page. This is acceptable within current scope and avoids over-engineering matching logic.
+### Trade-offs
+- Navigation is implemented by re-invoking the browser binary rather than using browser-specific remote-control protocols; this is pragmatic for Linux kiosk deployments where browsers typically handle subsequent invocations as singleton navigation requests.
+- `WebChatException` is an unchecked exception to keep the service API simple; callers may catch it if they need to surface launch/navigation failures.

@@ -1,0 +1,4 @@
+[Desktop Entry]
+Name=Google Chrome
+Exec=google-chrome %U
+Type=Application

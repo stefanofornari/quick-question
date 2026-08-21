@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# fake-xdg-mime: only supports 'query default x-scheme-handler/https'
+if [[ "$1" == "query" && "$2" == "default" && "$3" == "x-scheme-handler/https" ]]; then
+  echo "google-chrome.desktop"
+  exit 0
+fi
+echo "Error: unsupported xdg-mime command $*" >&2
+exit 1

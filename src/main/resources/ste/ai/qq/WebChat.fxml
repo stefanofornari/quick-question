@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import ste.vnc.viewer.VNCViewer?>
+
+<fx:root
+    xmlns:fx="http://javafx.com/fxml/1"
+    fx:controller="ste.ai.qq.WebChatController"
+    type="HBox" fillHeight="true"
+>
+    <fx:include fx:id="providerPane" source="ProviderPane.fxml"/>
+    <VNCViewer fx:id="viewer" connect="AUTO" uri="vnc://localhost:5905"></VNCViewer>
+</fx:root>

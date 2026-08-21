@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# fake-google-chrome: echoes its arguments so tests can assert on them
+echo "fake google-chrome $*"

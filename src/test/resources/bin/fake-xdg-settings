@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# fake-xdg-settings: only supports 'get default-web-browser'
+if [[ "$1" == "get" && "$2" == "default-web-browser" ]]; then
+  echo "google-chrome.desktop"
+  exit 0
+fi
+echo "Error: unsupported xdg-settings command $*" >&2
+exit 1

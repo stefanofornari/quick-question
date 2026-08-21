@@ -10,10 +10,12 @@
     handle modern AI WebChat
   - About other options:
     - JxBrowser - not free
-    - [JCEF](https://github.com/JetBrains/jcef): this is fundamentally an extension
-      to the Chromium Embedded Framework with some native gluing to be used
-      within Java. However there is no reliable documentation on how to use it
-      and embed it in a java application.
+    - [JCEF](https://github.com/chromiumembedded/cef): this is fundamentally an
+      extension to the Chromium Embedded Framework with some native gluing to be
+      used within Java. However it downloads an additional chrominium engine
+      even if Chrominium is already installed, there is no reliable documentation
+      on how to use it and embed it in a java application, and the test done was
+      not successful.
     - [avaje-webview](https://github.com/avaje/avaje-webview): interesting project
       that implement a modern WebView toolkit in Java; however it is a standalone
       application and the author does not seem interested in making a JavaFX or

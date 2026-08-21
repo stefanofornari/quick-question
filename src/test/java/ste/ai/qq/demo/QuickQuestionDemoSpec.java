@@ -33,7 +33,7 @@ public class QuickQuestionDemoSpec extends ApplicationTest {
 
         this.stage = stage;
 
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ste/ai/qq/demo/QuickQuestionDemo.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("QuickQuestionDemo.fxml"));
         AnchorPane root = loader.load();
 
         Scene scene = new Scene(root, 768, 1024);

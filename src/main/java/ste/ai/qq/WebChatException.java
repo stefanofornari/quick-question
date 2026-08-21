@@ -16,22 +16,26 @@
 package ste.ai.qq;
 
 /**
- * Provides a curated, out-of-the-box list of supported LLM web chat providers.
- * <p>
- * Host applications can obtain the predefined providers and pass them to the
- * Quick Question component through its entries property.
+ * Signals a failure in {@link WebChatService} operations.
  */
+public class WebChatException extends RuntimeException {
 
-public enum Provider {
-    ANTHROPIC_CLAUDE("Anthropic Claude", "https://claude.ai"),
-    CHAT_GPT("ChatGPT", "https://chatgpt.com"),
-    PERPLEXITY("Perplexity", "https://www.perplexity.ai");
+    /**
+     * Creates a new exception with the given message.
+     *
+     * @param message the detail message
+     */
+    public WebChatException(final String message) {
+        super(message);
+    }
 
-    public final String displayName;
-    public final String url;
-
-    Provider(final String displayName, final String url) {
-        this.displayName = displayName;
-        this.url = url;
+    /**
+     * Creates a new exception with the given message and cause.
+     *
+     * @param message the detail message
+     * @param cause   the underlying cause
+     */
+    public WebChatException(final String message, final Throwable cause) {
+        super(message, cause);
     }
 }

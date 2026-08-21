@@ -13,25 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package ste.ai.qq;
 
+import java.util.logging.Logger;
+import javafx.fxml.FXML;
+
 /**
- * Provides a curated, out-of-the-box list of supported LLM web chat providers.
- * <p>
- * Host applications can obtain the predefined providers and pass them to the
- * Quick Question component through its entries property.
+ *
  */
+public class WebChatController {
 
-public enum Provider {
-    ANTHROPIC_CLAUDE("Anthropic Claude", "https://claude.ai"),
-    CHAT_GPT("ChatGPT", "https://chatgpt.com"),
-    PERPLEXITY("Perplexity", "https://www.perplexity.ai");
+    final Logger log = Logger.getLogger(getClass().getName());
 
-    public final String displayName;
-    public final String url;
-
-    Provider(final String displayName, final String url) {
-        this.displayName = displayName;
-        this.url = url;
+    @FXML
+    public void initialize() {
+        log.finest(() -> "initializing the controller");
+        log.finest(() -> "controller initialized");
     }
+
 }

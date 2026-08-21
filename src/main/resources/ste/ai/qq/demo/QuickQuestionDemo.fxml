@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import ste.vnc.viewer.VNCViewer?>
 <?import ste.vnc.viewer.demo.CustomTitleBar?>
+<?import ste.ai.qq.WebChat?>
 
 
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="ste.ai.qq.demo.QuickQuestionDemoController">
@@ -11,10 +11,7 @@
             <CustomTitleBar fx:id="titleBar" title="QuicQuestion Demo"/>
         </top>
         <center>
-            <HBox fillHeight="true">
-                <fx:include fx:id="providerPane" source="../ProviderPane.fxml"/>
-                <VNCViewer fx:id="viewer" connect="AUTO" uri="vnc://localhost:5905"></VNCViewer>
-            </HBox>
+            <WebChat fx:id="webChat"/>
         </center>
     </BorderPane>
 
