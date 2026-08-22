@@ -44,7 +44,6 @@ public class WebChatService {
 
     private static final String SCRIPTS_RESOURCE_PREFIX = "bin/";
     private static final String LAUNCH_SCRIPT = "launch-browser.sh";
-    private static final String NAVIGATE_SCRIPT = "navigate-browser.sh";
     private static final String STOP_SCRIPT = "stop-browser.sh";
 
     private static final Logger log = Logger.getLogger(WebChatService.class.getName());
@@ -106,8 +105,8 @@ public class WebChatService {
      * Navigates the browser to the given URL.
      *
      * <p>If no browser is running, a new browser is launched in kiosk mode on
-     * the shared VNC display. If a browser is already running, it is
-     * redirected to the given URL.</p>
+     * the shared VNC display. If a browser is already running, it is stopped
+     * and a new session is launched for the given URL.</p>
      *
      * @param url the target URL
      * @throws WebChatException if the underlying script fails
@@ -115,10 +114,9 @@ public class WebChatService {
     public void navigateTo(final URL url) throws WebChatException {
         log.finest(() -> "navigateTo: " + url);
         if (isRunning()) {
-            redirect(url);
-        } else {
-            launch(url);
+            stop();
         }
+        launch(url);
     }
 
     /**
@@ -238,26 +236,6 @@ public class WebChatService {
         }
     }
 
-    private void redirect(final URL url) throws WebChatException {
-        log.finest(() -> "redirect: " + url);
-        final List<String> args = new ArrayList<>();
-        args.add(url.toExternalForm());
-        args.add("--display");
-        args.add(display);
-        args.add("--pid-file");
-        args.add(pidFile.toString());
-        args.add("--profile-dir");
-        args.add(profileDir.toString());
-        if (forcedBrowserBin != null) {
-            args.add("--browser-bin");
-            args.add(forcedBrowserBin.toString());
-        }
-        execute(NAVIGATE_SCRIPT, args.toArray(new String[0]));
-        if (!Files.isRegularFile(pidFile)) {
-            throw new WebChatException("Navigate script did not create pid file: " + pidFile);
-        }
-    }
-
     private void execute(final String scriptName, final String... args) throws WebChatException {
         final Path script = binDir.resolve(scriptName);
         final List<String> command = command(script, args);
@@ -308,7 +286,7 @@ public class WebChatService {
         try {
             final Path targetDir = Path.of(BaseDirectories.get().dataDir).resolve("quickquestion").resolve("bin");
             Files.createDirectories(targetDir);
-            final String[] scripts = {LAUNCH_SCRIPT, NAVIGATE_SCRIPT, STOP_SCRIPT};
+            final String[] scripts = {LAUNCH_SCRIPT, STOP_SCRIPT};
             final ClassLoader cl = WebChatService.class.getClassLoader();
             for (final String script : scripts) {
                 final Path target = targetDir.resolve(script);

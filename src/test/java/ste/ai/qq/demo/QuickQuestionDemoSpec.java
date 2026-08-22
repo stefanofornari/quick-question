@@ -22,19 +22,22 @@ import javafx.stage.Stage;
 import static org.assertj.core.api.BDDAssertions.then;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
+import org.testfx.util.WaitForAsyncUtils;
 
 public class QuickQuestionDemoSpec extends ApplicationTest {
 
     private Stage stage;
-
+    private QuickQuestionDemoController controller;
 
     @Override
     public void start(final Stage stage) throws Exception {
 
         this.stage = stage;
 
+
         FXMLLoader loader = new FXMLLoader(getClass().getResource("QuickQuestionDemo.fxml"));
         AnchorPane root = loader.load();
+        controller = loader.getController();
 
         Scene scene = new Scene(root, 768, 1024);
         stage.setScene(scene);
@@ -43,6 +46,7 @@ public class QuickQuestionDemoSpec extends ApplicationTest {
 
     @Test
     void basic_ui_elements_are_updated() {
-        then(stage.getTitle()).isEqualTo("QuickQuestion Demo");
+        WaitForAsyncUtils.waitForFxEvents();
+        then(controller.titleBar.getTitle()).isEqualTo("QuickQuestion Demo");
     }
 }

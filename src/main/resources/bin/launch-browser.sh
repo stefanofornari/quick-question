@@ -26,6 +26,7 @@ BROWSER_BIN=""
 GEOMETRY=""
 DRY_RUN=false
 URL=""
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -115,8 +116,6 @@ if [[ -n "$GEOMETRY" ]]; then
     HEIGHT="${GEOMETRY#*x}"
 fi
 
-export DISPLAY="$DISPLAY_ARG"
-
 DEFAULT_DESKTOP=""
 if [[ -n "$BROWSER_BIN" ]]; then
     EXEC_CMD="$BROWSER_BIN"
@@ -164,22 +163,38 @@ CMD=("$EXEC_CMD")
 PROFILE_NAME=$(basename "${DEFAULT_DESKTOP:-browser}" .desktop | tr '[:upper:]' '[:lower:]')
 PROFILE_DIR="$PROFILE_DIR/$PROFILE_NAME-profile"
 mkdir -p "$PROFILE_DIR"
+
+# 1. Base browser flags (isolating instance and profile)
 case "${DEFAULT_DESKTOP_LOWER:-${PROFILE_NAME}}" in
     *chrome*|*chromium*|*brave*|*edge*|*vivaldi*)
-        CMD+=("--new-window" "--kiosk" "--no-first-run" "--user-data-dir=$PROFILE_DIR" "$URL")
+        CMD+=(
+            "--new-window"
+            "--kiosk"
+            "--no-first-run"
+            "--user-data-dir=$PROFILE_DIR"
+            "--ozone-platform=x11"
+            "--display=$DISPLAY_ARG"
+        )
         ;;
     *firefox*|*zen*|*waterfox*)
-        CMD+=("--new-instance" "--kiosk" "--profile" "$PROFILE_DIR" "$URL")
+        CMD+=(
+            "--no-remote"
+            "--new-instance"
+            "--kiosk"
+            "--profile" "$PROFILE_DIR"
+            "--display=$DISPLAY_ARG"
+        )
         ;;
     *)
-        CMD+=("--kiosk" "$URL")
+        CMD+=("--kiosk")
         ;;
 esac
 
+# 2. Window geometry flags
 if [[ -n "$GEOMETRY" ]]; then
     case "${DEFAULT_DESKTOP_LOWER:-${PROFILE_NAME}}" in
         *chrome*|*chromium*|*brave*|*edge*|*vivaldi*)
-            CMD+=("--window-position" "0,0" "--window-size=$((WIDTH+1)),$((HEIGHT+1))")
+            CMD+=("--window-position=0,0" "--window-size=$((WIDTH+1)),$((HEIGHT+1))")
             ;;
         *firefox*|*zen*|*waterfox*)
             CMD+=("--width" "$WIDTH" "--height" "$HEIGHT")
@@ -187,6 +202,33 @@ if [[ -n "$GEOMETRY" ]]; then
     esac
 fi
 
+# 3. Add URL at the very end
+CMD+=("$URL")
+
+#
+# Launching VNC server, saving its PID and waiting to be ready
+#
+VNC_BIN="${SCRIPT_DIR}/../tigervnc-1.16.2.x86_64/usr/bin/Xvnc"
+if [[ ! -x "$VNC_BIN" ]]; then
+    VNC_BIN="Xvnc"
+fi
+
+"$VNC_BIN" "${DISPLAY_ARG}" -geometry "${GEOMETRY:-1280x800}" -depth 24 -SecurityTypes None -ac &
+echo $! > "$PID_FILE"
+
+while ! DISPLAY="${DISPLAY_ARG}" xset q &>/dev/null; do
+    sleep 0.1
+done
+
+#
+# Export target display and strip Wayland variables to prevent socket leaks
+#
+export DISPLAY="$DISPLAY_ARG"
+unset WAYLAND_DISPLAY
+
+#
+# Finally, launching the browser
+#
 if [ "$DRY_RUN" = true ]; then
     echo "[DRY-RUN] Command to execute:"
     printf '%q ' "${CMD[@]}"
@@ -194,5 +236,4 @@ if [ "$DRY_RUN" = true ]; then
 else
     "${CMD[@]}" >/dev/null 2>&1 &
     disown
-    echo $! > "$PID_FILE"
 fi

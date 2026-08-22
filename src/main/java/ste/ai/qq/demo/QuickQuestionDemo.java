@@ -19,7 +19,6 @@ import atlantafx.base.theme.NordLight;
 import java.io.IOException;
 import java.net.URL;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -55,12 +54,6 @@ public class QuickQuestionDemo extends Application {
 
         stage.setScene(scene);
 
-        //
-        // Make sure to set the title after UI initialization and binding setting
-        //
-        Platform.runLater(() -> {
-            stage.setTitle("Quick Question Demo");
-        });
         stage.setResizable(true);
         stage.initStyle(StageStyle.UNDECORATED);
         stage.show();

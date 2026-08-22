@@ -24,7 +24,7 @@
 - The component embeds a VNC viewer (`VNCViewerFX`) that connects to a local
   VNC server (e.g. `:5`). The actual browser runs on that display, managed
   by `WebChatService` via shell scripts.
-- `WebChatService` handles browser lifecycle: launch, redirect, stop. It
+- `WebChatService` handles browser lifecycle: launch, stop. It
   delegates platform-specific work to scripts but keeps process management
   (PID tracking, graceful kill) in Java for cross-platform portability.
 - Scripts use named options (`--display`, `--pid-file`, `--profile-dir`,

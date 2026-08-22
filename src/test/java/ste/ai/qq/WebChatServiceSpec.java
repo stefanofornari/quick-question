@@ -57,17 +57,6 @@ class WebChatServiceSpec {
             "done\n" +
             "echo launched > \"${PID_FILE}.launched\"\n" +
             "echo 999999999 > \"$PID_FILE\"\n");
-        writeScript(binDir, "navigate-browser.sh",
-            "PID_FILE=\"\"\n" +
-            "while [[ $# -gt 0 ]]; do\n" +
-            "  case \"$1\" in\n" +
-            "    --pid-file) PID_FILE=\"$2\"; shift 2 ;;\n" +
-            "    *) shift ;;\n" +
-            "  esac\n" +
-            "done\n" +
-            "echo navigated > \"${PID_FILE}.navigated\"\n" +
-            "echo 999999999 > \"$PID_FILE\"\n" +
-            "exit 0\n");
         writeScript(binDir, "stop-browser.sh",
             "PID_FILE=\"\"\n" +
             "while [[ $# -gt 0 ]]; do\n" +
@@ -90,7 +79,7 @@ class WebChatServiceSpec {
     }
 
     @Test
-    void navigate_to_when_browser_running_redirects_it(@TempDir final Path scratch) throws Exception {
+    void navigate_to_when_browser_running_stops_and_launches_new_session(@TempDir final Path scratch) throws Exception {
         setupService(scratch);
         service.navigateTo(new URL("https://chatgpt.com"));
         Files.deleteIfExists(pidFile.resolveSibling("browser.pid.launched"));
@@ -98,7 +87,7 @@ class WebChatServiceSpec {
         service.navigateTo(new URL("https://claude.ai"));
         then(service.isRunning()).isTrue();
         then(Long.parseLong(Files.readString(pidFile).trim())).isEqualTo(firstPid);
-        then(pidFile.resolveSibling("browser.pid.navigated")).exists();
+        then(pidFile.resolveSibling("browser.pid.launched")).exists();
     }
 
     @Test
@@ -131,7 +120,6 @@ class WebChatServiceSpec {
         Files.createDirectories(binDir);
         pidFile = scratch.resolve("browser.pid");
         writeScript(binDir, "launch-browser.sh", "exit 1\n");
-        writeScript(binDir, "navigate-browser.sh", "exit 0\n");
         writeScript(binDir, "stop-browser.sh", "exit 0\n");
         service = new WebChatService(binDir, pidFile, ":5", pid -> true);
         thenThrownBy(() -> service.navigateTo(new URL("https://chatgpt.com")))
