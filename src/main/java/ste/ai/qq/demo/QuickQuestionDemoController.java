@@ -108,7 +108,7 @@ public class QuickQuestionDemoController {
         final Scene dialogScene = new javafx.scene.Scene(dialog);
         // Make the Scene background transparent so the VBox rounded corners render smoothly
         dialogScene.setFill(javafx.scene.paint.Color.TRANSPARENT);
-        dialogScene.getStylesheets().add(getClass().getResource("VNCViewerDemo.css").toExternalForm());
+        dialogScene.getStylesheets().add(getClass().getResource("QuickQuestionDemo.css").toExternalForm());
 
         javafx.stage.Stage dialogStage = new javafx.stage.Stage();
         dialogStage.initOwner(stage());

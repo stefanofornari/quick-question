@@ -49,7 +49,7 @@ public class QuickQuestionDemo extends Application {
         Scene scene = new Scene(loader.load());
 
         scene.getStylesheets().add(
-            getClass().getResource("/ste/ai/qq/QuickQuestion.css").toExternalForm()
+            getClass().getResource("QuickQuestionDemo.css").toExternalForm()
         );
 
         stage.setScene(scene);
@@ -69,7 +69,7 @@ public class QuickQuestionDemo extends Application {
 
         Scene dialogScene = new Scene(dialogRoot);
         dialogScene.getStylesheets().add(
-            getClass().getResource("/ste/ai/qq/QuickQuestion.css").toExternalForm()
+            getClass().getResource("QuickQuestionDemo.css").toExternalForm()
         );
 
         Stage dialog = new Stage();

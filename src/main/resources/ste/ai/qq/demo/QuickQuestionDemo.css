@@ -1,0 +1,188 @@
+.root {
+    /* Main brand accent color */
+    -color-accent-emphasis: #d7e6cb;
+    -color-accent-fg:       derive(-color-accent-emphasis, +30%);
+    -color-accent-muted:    derive(-color-accent-emphasis, -30%);;
+    -color-accent-subtle:   derive(-color-accent-emphasis, -50%);
+
+    /* Text selection color */
+    -color-cell-border-selected: -color-accent-emphasis;
+
+    /* Background colors */
+    -color-bg-default: -color-accent-emphasis;
+    -color-bg-subtle:  -color-accent-subtle;
+    -color-bg-overlay: -color-accent-muted;
+    -color-bg-inset:   -color-accent-emphasis;
+
+    -color-fg-default: rgba(43, 29, 12, 1.0);
+    -color-fg-muted:   rgba(43, 29, 12, 0.62);
+
+    /* Interactive state colors */
+    -color-neutral-subtle: rgb(255, 0, 0);
+    -color-neutral-muted:  rgb(0, 255, 0);
+
+    /* Borders for popups and titlebars */
+    -color-border-default: -color-accent-fg;
+    -color-border-muted:   -color-accent-muted;
+
+    /* Button hover styles */
+    -color-button-border-hover: -color-accent-muted;
+    -color-button-bg-hover:     -color-accent-emphasis;
+
+    /* --- MENU HOVER OVERRIDES --- */
+    /* 1. Standard JavaFX selection color (used by native MenuItems) */
+    -fx-selection-bar: -color-accent-subtle;
+    -fx-selection-bar-non-focused: -color-accent-subtle;
+
+    /* 2. Text color on hover (ensures readability) */
+    -fx-selection-bar-text: -color-fg-default;
+
+    /* 3. AtlantaFX-specific menu item hover variable */
+    -color-menu-item-bg-hover: -color-accent-subtle;
+    -color-menu-item-bg-focused: -color-accent-subtle;
+}
+
+/* Fallback: Direct selector targeting top-level menu bar headers and dropdown items */
+
+.menu-bar .menu:hover,
+.menu-bar .menu:showing,
+.menu-item:hover,
+.menu-item:focused {
+    -fx-background-color: -color-accent-subtle;
+}
+
+.custom-titlebar {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-muted;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 4 8 4 8;
+}
+
+.titlebar-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-fg-default;
+    -fx-font-size: 12px;
+    -fx-padding: 2 6 2 6;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-min-width: 24px;
+    -fx-min-height: 24px;
+    -fx-max-width: 24px;
+    -fx-max-height: 24px;
+}
+
+.titlebar-button:hover {
+    -fx-background-color: -color-accent-subtle;
+}
+
+.titlebar-title {
+    -fx-text-fill: -color-fg-default;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 0 8;
+    -fx-alignment: center-left;
+}
+
+.about-dialog {
+    -fx-background-color: -color-bg-default;
+    -fx-padding: 24;
+    -fx-spacing: 16;
+    -fx-border-color: -color-border-muted;
+    -fx-border-width: 1;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(43,29,12,0.35), 28, 0, 0, 10);
+}
+
+.about-icon-frame {
+    -fx-background-color: -color-accent-subtle;
+    -fx-background-radius: 999;
+    -fx-border-color: -phosphor-muted;
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+    -fx-padding: 10;
+    -fx-min-width: 84;
+    -fx-min-height: 84;
+    -fx-max-width: 84;
+    -fx-max-height: 84;
+    -fx-alignment: center;
+}
+
+.about-separator .line {
+    -fx-border-color: -color-border-muted transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+    -fx-opacity: 0.6;
+}
+
+.about-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.about-version {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.about-text {
+    -fx-font-size: 13px;
+    -fx-text-fill: -color-fg-default;
+    -fx-line-spacing: 2;
+}
+
+.about-copyright {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.about-license {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.about-close-button {
+    -fx-background-color: -color-accent-emphasis;
+    -fx-text-fill: -color-bg-default;
+    -fx-font-weight: bold;
+    -fx-padding: 6 16 6 16;
+    -fx-min-width: 96px;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+}
+
+.about-close-button:hover {
+    -fx-background-color: -color-accent-muted;
+}
+
+.provider-container {
+    -fx-background-color: -color-accent-fg;
+}
+
+.provider-button {
+    -fx-background-color: #d7e6cb;
+    -fx-text-fill: white;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 8, 0, 3, 3);
+}
+
+.provider-button:hover {
+    -fx-background-color: -color-accent-muted;
+}
+
+.provider-button:pressed {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 4, 0, 1, 1);
+}
+
+.disconnection-pane {
+    -panel:        rgba(0, 0, 0, 0.85);
+    -panel-edge:   -color-accent-fg;
+    -text:         -color-accent-fg;
+}

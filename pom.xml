@@ -44,6 +44,11 @@
             <version>${javafx.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-web</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
             <groupId>io.github.mkpaz</groupId>
             <artifactId>atlantafx-base</artifactId>
             <version>${atlantafx.version}</version>
@@ -95,6 +100,12 @@
         </dependency>
     </dependencies>
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -110,12 +121,13 @@
                 <configuration>
                     <mainClass>${mainClass}</mainClass>
                     <options>
+                        <option>--add-modules</option>
+                        <option>jdk.jsobject,javafx.web,javafx.controls</option>
                         <option>--add-exports=java.desktop/sun.awt=ALL-UNNAMED</option>
                         <option>--add-exports=java.desktop/sun.java2d=ALL-UNNAMED</option>
                         <option>--add-opens=java.desktop/java.awt=ALL-UNNAMED</option>
                         <option>--add-opens=java.base/java.lang=ALL-UNNAMED</option>
                         <option>-Djava.util.logging.config.file=src/main/resources/logging.properties</option>
-                        <!--<option>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000</option>-->
                     </options>
                 </configuration>
             </plugin>

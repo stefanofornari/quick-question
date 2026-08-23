@@ -14,6 +14,8 @@ Reusable JavaFX component for embedding a webview and selecting LLM chat endpoin
 Demo JavaFX application used to showcase the component and provide simple configuration UI.
 
 - [US-000004](demo/US-000004) — Provide a demo application with simple configuration UI
+- [US-000005](demo/US-000005) — About Dialog
+- [US-000005](demo/US-000008) — Show predefined providers
 
 ## Scope Reference
 - [Scope Overview](../scope.md)
