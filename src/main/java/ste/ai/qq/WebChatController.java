@@ -16,60 +16,43 @@
 
 package ste.ai.qq;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.logging.Logger;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 
-/**
- * Controller for the {@link WebChat} component.
- * <p>
- * Wires the provider buttons to {@link WebChatService} so that selecting a
- * provider launches or redirects the kiosk browser to the corresponding
- * web chat URL.
- * </p>
- */
 public class WebChatController {
 
     final Logger log = Logger.getLogger(getClass().getName());
 
+    final WebChatService service = new WebChatService();
+
     @FXML
-    private Node providerPane;
+    private TopHidingToolBar providerToolBar;
 
     @FXML
     public void initialize() {
         log.finest(() -> "initializing the controller");
 
         Platform.runLater(() -> {
-            final WebChatService service = new WebChatService();
-            if (providerPane == null) {
+            if (providerToolBar == null) {
                 log.fine("providerPane not available for wiring");
                 return;
             }
-
-            wireButton(providerPane, "gptButton", Provider.CHAT_GPT, service);
-            wireButton(providerPane, "claudeButton", Provider.ANTHROPIC_CLAUDE, service);
-            wireButton(providerPane, "geminiButton", Provider.GEMINI, service);
-            wireButton(providerPane, "mistralButton", Provider.MISTRAL, service);
-            wireButton(providerPane, "perplexityButton", Provider.PERPLEXITY, service);
         });
 
         log.finest(() -> "controller initialized");
     }
 
-    private static void wireButton(final Node pane, final String buttonId, final Provider provider, final WebChatService service) {
-        final Button button = (Button) pane.lookup("#" + buttonId);
-        if (button == null) {
-            return;
+    @FXML
+    private void onSwitch(final ActionEvent action) {
+        Provider provider = Provider.valueOf(((Node)action.getSource()).getId());
+        try {
+            service.navigateTo(URI.create(provider.url).toURL());
+        } catch (final Exception e) {
+            throw new RuntimeException("Failed to navigate to " + provider.displayName, e);
         }
-        button.setOnAction(event -> {
-            try {
-                service.navigateTo(new URL(provider.url));
-            } catch (final Exception e) {
-                throw new RuntimeException("Failed to navigate to " + provider.displayName, e);
-            }
-        });
     }
 }

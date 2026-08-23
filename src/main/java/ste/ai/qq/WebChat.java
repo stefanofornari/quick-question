@@ -19,12 +19,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Logger;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 
-/**
- * .
- */
-public class WebChat extends HBox {
+public class WebChat extends StackPane {
 
     final Logger log = Logger.getLogger(getClass().getName());
 
@@ -38,12 +35,10 @@ public class WebChat extends HBox {
 
         try {
             fxmlLoader.load();
-            // Retrieve the controller instance created by FXMLLoader
             this.controller = fxmlLoader.getController();
         } catch (IOException exception) {
             throw new RuntimeException("Failed to load " + url, exception);
         }
         log.finest(() -> "component created");
     }
-
 }
