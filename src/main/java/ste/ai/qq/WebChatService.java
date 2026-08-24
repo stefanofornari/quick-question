@@ -21,15 +21,14 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Launches, redirects, and tracks the system default browser on the VNC
@@ -240,18 +239,26 @@ public class WebChatService {
         final Path script = binDir.resolve(scriptName);
         final List<String> command = command(script, args);
         log.finest(() -> "command: " + command);
+        final String[] stdout = new String[1], stderr = new String[1];
         try {
             final ProcessBuilder pb = new ProcessBuilder(command);
             final Process process = pb.start();
             final int exitCode = process.waitFor();
+            stdout[0] = new String(process.getInputStream().readAllBytes());
+            stderr[0] = new String(process.getErrorStream().readAllBytes());
             if (exitCode != 0) {
-                throw new WebChatException(scriptName + " failed (exit " + exitCode + ")");
+                final String msg = "%s failed with exit code %d".formatted(scriptName, exitCode);
+                log.severe(() -> msg);
+                throw new WebChatException(msg);
             }
         } catch (final IOException e) {
             throw new WebChatException("Failed to execute " + scriptName + ": " + e.getMessage(), e);
         } catch (final InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new WebChatException("Interrupted while executing " + scriptName, e);
+        } finally {
+            log.finest(() -> "------------\n%s stdout:\n%s".formatted(scriptName, StringUtils.defaultString(stdout[0])));
+            log.finest(() -> "------------\n%s stderr:\n%s\n------------".formatted(scriptName, StringUtils.defaultString(stderr[0])));
         }
     }
 

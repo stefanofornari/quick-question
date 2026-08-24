@@ -213,18 +213,24 @@ if [[ ! -x "$VNC_BIN" ]]; then
     VNC_BIN="Xvnc"
 fi
 
-"$VNC_BIN" "${DISPLAY_ARG}" -geometry "${GEOMETRY:-1280x800}" -depth 24 -SecurityTypes None -ac &
-echo $! > "$PID_FILE"
+if [ "$DRY_RUN" != true ]; then
+    "$VNC_BIN" "${DISPLAY_ARG}" -geometry "${GEOMETRY:-1280x800}" -depth 24 -SecurityTypes None -ac &
+    echo $! > "$PID_FILE"
 
-while ! DISPLAY="${DISPLAY_ARG}" xset q &>/dev/null; do
-    sleep 0.1
-done
+    TIMEOUT=100
+    ELAPSED=0
+    while ! DISPLAY="${DISPLAY_ARG}" xset q &>/dev/null; do
+        sleep 0.1
+        ELAPSED=$((ELAPSED + 1))
+        if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
+            echo "quickquestion: timed out waiting for VNC display ${DISPLAY_ARG}" >&2
+            exit 1
+        fi
+    done
 
-#
-# Export target display and strip Wayland variables to prevent socket leaks
-#
-export DISPLAY="$DISPLAY_ARG"
-unset WAYLAND_DISPLAY
+    export DISPLAY="$DISPLAY_ARG"
+    unset WAYLAND_DISPLAY
+fi
 
 #
 # Finally, launching the browser

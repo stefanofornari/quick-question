@@ -16,13 +16,14 @@
 package ste.ai.qq.demo;
 
 import atlantafx.base.theme.NordLight;
+import dev.dirs.ProjectDirectories;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
@@ -30,6 +31,10 @@ import javafx.stage.StageStyle;
  * Demo application entry point.
  */
 public class QuickQuestionDemo extends Application {
+
+    private static final String QUALIFIER = "com.github.stefanofornari";
+    private static final String ORGANIZATION = "ste";
+    private static final String APPLICATION = "quickquestion";
 
     /**
      * Starts the demo application.
@@ -39,6 +44,26 @@ public class QuickQuestionDemo extends Application {
      */
     @Override
     public void start(final Stage stage) throws IOException {
+
+        //
+        // Let's make sure Tiger VNC bundled with QuickQuestion is installed
+        // locally (under ~/.local/share/quickquestion). The intaller checks if
+        // the bundled version is already installed and updates it if needed.
+        //
+        final VNCServerInstaller installer = new VNCServerInstaller(Path.of("tigervnc", "tiger-vnc-mini-%s.jar".formatted(VNCServerInstaller.VNC_SERVER_VERSION)));
+        try {
+            installer.installInto(
+                Path.of(ProjectDirectories.from(QUALIFIER, ORGANIZATION, APPLICATION).dataDir)
+            );
+        } catch (final IOException e) {
+            System.err.println("QuickQuestion: unable to install VNC server binaries: " + e.getMessage());
+            Platform.exit();
+            return;
+        }
+
+        //
+        // Start the application
+        //
         Application.setUserAgentStylesheet(new NordLight().getUserAgentStylesheet());
 
         final URL fxml = QuickQuestionDemo.class.getResource("QuickQuestionDemo.fxml");
@@ -57,28 +82,6 @@ public class QuickQuestionDemo extends Application {
         stage.setResizable(true);
         stage.initStyle(StageStyle.UNDECORATED);
         stage.show();
-    }
-
-    private void showProviderDialog(Stage owner) throws IOException {
-        final URL paneFxml = QuickQuestionDemo.class.getResource("/ste/ai/qq/ProviderPane.fxml");
-        if (paneFxml == null) {
-            throw new IOException("Unable to locate ProviderPane FXML at " + paneFxml);
-        }
-        FXMLLoader loader = new FXMLLoader(paneFxml);
-        Parent dialogRoot = loader.load();
-
-        Scene dialogScene = new Scene(dialogRoot);
-        dialogScene.getStylesheets().add(
-            getClass().getResource("QuickQuestionDemo.css").toExternalForm()
-        );
-
-        Stage dialog = new Stage();
-        dialog.initOwner(owner);
-        dialog.initModality(Modality.WINDOW_MODAL);
-        dialog.setScene(dialogScene);
-        dialog.setTitle("Select Provider");
-        dialog.setResizable(false);
-        dialog.show();
     }
 
     @Override

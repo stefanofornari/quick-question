@@ -15,6 +15,7 @@ Demo JavaFX application used to showcase the component and provide simple config
 
 - [US-000004](demo/US-000004) — Provide a demo application with simple configuration UI
 - [US-000005](demo/US-000005) — About Dialog
+- [US-000006](demo/US-000006) — Install Tiger VNC Server
 - [US-000005](demo/US-000008) — Show predefined providers
 
 ## Scope Reference
