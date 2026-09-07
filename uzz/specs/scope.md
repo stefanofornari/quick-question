@@ -1,7 +1,7 @@
-# Quick Question Scope Overview
+# QuickQuestion Scope Overview
 
 ## Project Name
-- Quick Question
+- QuickQuestion
 
 ## Version
 - 0.0.0-SNAPSHOT
@@ -10,37 +10,45 @@
 - ste.ai.qq
 
 ## Overall Description
-Quick Question is a JavaFX component that can be embedded into JavaFX applications to provide quick access to LLM web chat interfaces. The component displays a WebView and a selectable list of LLM endpoints at the top of the view. Selecting an LLM navigates the WebView to that provider’s web chat page.
+QuickQuestion is a JavaFX component that can be embedded into JavaFX applications
+to provide quick access to LLM web chat interfaces. The component displays a VNC
+viewer and a hard-coded list of LLM endpoints at the top of the view. Selecting
+an LLM navigates the viewer to that provider's web chat page by launching a
+remote browser session via a bundled Tiger VNC server.
 
-The component accepts a list of LLM providers through a configurable property; it does not own or display a hard-coded list itself. A reusable `DefaultProviders` class is provided so host applications can easily obtain a curated, out-of-the-box set of supported LLM providers.
+A `Provider` enum is provided so host applications can easily reference the
+out-of-the-box supported LLM providers.
 
-Session cookie persistence will be handled by the underlying WebView engine. The host application may optionally supply a custom directory for WebView cookie/session storage; if no directory is supplied, a sensible default will be used.
+Session persistence will be handled through the browser profile directory used
+by the remote browser (a new provile directory is created and used so not to
+interfere with the user's real profile).
 
-A demo application will be provided to showcase the component and to allow simple configuration of the available LLM entries. The demo application is responsible for presenting the default providers in the selector and for surfacing any provider-specific warnings to the end user.
+A demo application showcases the component and a NetBeans plug-in is provider to
+use QuickQuestion inside the IDE.
+
+## License
+Given that the project uses and distributes GPL components (e.g. TiverVNC) the
+while project is distributed under GPL v2 license.
 
 ## In-Scope Capabilities
-- JavaFX component for embedding a WebView into host JavaFX applications
-- Default WebView navigation to an LLM home/chat page
-- Top-level LLM selector listing configured LLM names and URLs
+- JavaFX component for embedding a VNC viewer into host JavaFX applications
+- Remote browser session launched via bundled Tiger VNC server
+- Top-level LLM selector listing hard-coded LLM names and URLs
 - Navigation to the selected LLM URL when a user chooses an entry
-- Reading the list of LLMs and URLs from a configuration object or configuration function
-- Reusable `DefaultProviders` class exposing the out-of-the-box supported LLM providers
-- Provider data model including `googleLogin` flag (`true`/`false`)
-- WebView session cookie persistence across application restarts
-- Optional custom directory for WebView session/cookie storage supplied by the host application
-- Default WebView session storage directory used when none is supplied
-- Demo application showcasing the component
-- Simple configuration UI in the demo application
-- Demo application uses `DefaultProviders` to populate the selector
-- Demo application shows a warning when a selected provider does not support Google login
-- Support for a separate additional configuration panel component as a related but excluded module
+- Browser session cookie persistence across application restarts via browser profile directory
+- Demo application showcasing the component with About dialog showing vesioning
+  and licensing information
+- NetBeans pluig-in to use QuickQuestion in the IDE
+- Tiger VNC server auto-installation into the user data directory at startup
 
-## Out-of-the-box Providers
-| Provider | URL | googleLogin |
-|---|---|---|
-| Anthropic Claude | https://claude.ai | false |
-| ChatGPT | https://chatgpt.com | true |
-| Perplexity | https://www.perplexity.ai | true |
+### Out-of-the-box Providers
+| Provider | URL |
+|---|---|
+| ChatGPT | https://chatgpt.com |
+| Claude | https://claude.ai |
+| Gemini | https://gemini.google.com |
+| Mistral | https://chat.mistral.ai/chat |
+| Perplexity | https://www.perplexity.ai |
 
 ## Out-of-Scope / Future Enhancements
 - Authentication / API key management
@@ -59,13 +67,16 @@ A demo application will be provided to showcase the component and to allow simpl
 - JUnit 5
 - TestFX
 - AssertJ
+- AssertJ BDD (BDDAssertions)
 - Headless test execution support
 - TDD-oriented workflow
+- Tiger VNC server bundled as a dependency
 
 ## Target Systems/Platforms
 - JavaFX desktop applications
 - Demo application for local desktop execution
 - Host applications embedding the component
+- NetBeans IDE module (via JFXPanel embedding)
 
 ## Path/Link to `coding-standard.md`
 - `uzz/specs/coding-standard.md`

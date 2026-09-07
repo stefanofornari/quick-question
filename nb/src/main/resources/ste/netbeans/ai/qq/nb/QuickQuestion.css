@@ -1,0 +1,45 @@
+.root {
+    /* Main brand accent color */
+    -color-accent-emphasis: rgba(255, 255, 255, 1);
+    -color-accent-fg:       derive(-color-accent-emphasis, +30%);
+    -color-accent-muted:    derive(-color-accent-emphasis, -30%);;
+    -color-accent-subtle:   derive(-color-accent-emphasis, -50%);
+
+    /* Text selection color */
+    -color-cell-border-selected: -color-accent-emphasis;
+
+    /* Background colors */
+    -color-bg-default: rgba(255, 255, 255, 1);
+    -color-bg-subtle:  -color-accent-subtle;
+    -color-bg-overlay: black;
+    -color-bg-inset:   -color-accent-emphasis;
+
+    -color-fg-default: rgba(43, 29, 12, 1.0);
+    -color-fg-muted:   rgba(43, 29, 12, 0.62);
+
+    /* Interactive state colors */
+    -color-neutral-subtle: rgb(255, 0, 0);
+    -color-neutral-muted:  rgb(0, 255, 0);
+
+    /* Borders for popups and titlebars */
+    -color-border-default: -color-accent-fg;
+    -color-border-muted:   -color-accent-muted;
+
+    /* Button hover styles */
+    -color-button-border-hover: -color-accent-muted;
+    -color-button-bg-hover:     -color-accent-emphasis;
+
+    /* --- MENU HOVER OVERRIDES --- */
+    /* 1. Standard JavaFX selection color (used by native MenuItems) */
+    -fx-selection-bar: -color-accent-subtle;
+    -fx-selection-bar-non-focused: -color-accent-subtle;
+
+    /* 2. Text color on hover (ensures readability) */
+    -fx-selection-bar-text: -color-fg-default;
+
+    /* 3. AtlantaFX-specific menu item hover variable */
+    -color-menu-item-bg-hover: -color-accent-subtle;
+    -color-menu-item-bg-focused: -color-accent-subtle;
+}
+
+/* Fallback: Direct selector targeting top-level menu bar headers and dropdown items */

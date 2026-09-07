@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.Image?>
+
+<fx:root xmlns:fx="http://javafx.com/javafx/1"
+         fx:id="root"
+         fx:controller="ste.ai.qq.demo.AboutDialogController"
+         type="VBox"
+         spacing="16.0"
+         prefWidth="420.0" maxWidth="420.0"
+         alignment="CENTER"
+         styleClass="about-dialog"
+>
+    <children>
+        <VBox spacing="8.0" alignment="CENTER">
+            <children>
+                <StackPane styleClass="about-icon-frame">
+                    <children>
+                        <ImageView fx:id="appIcon" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../logo-qq-128x128.png"/>
+                            </image>
+                        </ImageView>
+                    </children>
+                </StackPane>
+                <Label text="QuickQuestion" styleClass="about-title"/>
+                <Label text="Version 0.0.0-SNAPSHOT" styleClass="about-version"/>
+            </children>
+        </VBox>
+        <Separator styleClass="about-separator"/>
+        <Label text="A JavaFX component that embeds LLM chat interfaces into host applications, providing quick access to web-based AI assistants directly from your desktop.&#10;&#10;Select a provider from the top toolbar to open its chat interface in the embedded viewer."
+               styleClass="about-text"
+               wrapText="true"
+               textAlignment="CENTER"
+               maxWidth="Infinity"/>
+        <Separator styleClass="about-separator"/>
+        <VBox spacing="4.0" alignment="CENTER">
+            <children>
+                <Label text="Copyright (C) 2026 QuickQuestion Contributors" styleClass="about-copyright"/>
+                <Label text="Licensed under the Apache License, Version 2.0" styleClass="about-license"/>
+            </children>
+        </VBox>
+        <Button text="Close" fx:id="closeButton" styleClass="about-close-button" defaultButton="true"/>
+    </children>
+</fx:root>

@@ -1,86 +1,73 @@
-# Quick Question
+# QuickQuestion
 
-Quick Question is a JavaFX component and demo application for embedding web-based LLM chat interfaces.
+`QuickQuestion` is:
 
-## `WebChatView` component
+- a JavaFX component
+- a demo application
+- a NetBeans plug-in
 
-`ste.ai.qq.WebChatView` is a self-contained JavaFX component that displays a `ButtonBar` service selector and an embedded `WebView`. Add it to a scene like any other node:
+for using web-based LLM chat interfaces inside a JavaFX or Swing application.
 
-```java
-WebChatView webChatView = new WebChatView();
-webChatView.webChatSetProperty().set(defaultProviders);
-```
+## `WebChat` Control
 
-The list of available services is exposed through the `webChatSetProperty` property:
+`ste.ai.qq.WebChat` is a self-contained JavaFX component that displays a native
+browser (i.e. the reall browser used by default by the user) as a JavaFX node.
+It additionally provides a `ButtonBar` selector to pick which one to use amongst
+the most known IA WEbChat service.
 
-```java
-webChatView.webChatSetProperty(myListProperty);
-```
+When the user clicks a service button, e.g. ChatGPT, the component loads its web
+interface so the user can interact with it.
 
-When the user clicks a service button, the component loads the associated URL and shows a warning label if Google login is not supported for that provider.
-
-The component can also be embedded directly in FXML by importing its class:
+The component can be embedded directly in FXML by importing its class and using
+`WebChat` descriptor:
 
 ```xml
-<?import ste.ai.qq.WebChatView?>
+<?import ste.ai.qq.WebChat?>
 ...
-<WebChatView fx:id="webChatView" />
+<WebChat fx:id="webChat" />
 ```
 
-Optional constructors allow a custom default URL and/or a custom WebView session storage directory:
+## How It Works
+Using modern web chat web applications in Java is technically quite challenging
+because they use the most advanced web protocols and applications that franckly
+only native modern browsers provide. `QuickQuestion' runs a real browser (the
+default browser in your system) completely hidden to the user and in a virtual
+desktop in a VNC server. `WebChat` connects to the VNC server and show the content
+of the screen inside the component area. The component is fully wired to the
+real browser so the interaction is smooth like you would interact directly with
+Firefox or Chrome.
 
-```java
-new WebChatView()                                 // default storage, no default URL
-new WebChatView(storageDirectory)                 // custom storage
-new WebChatView(defaultUrl, storageDirectory)     // default URL + custom storage
-```
-
-## Cookie Management
-
-The `WebChatView` component persists WebView local storage across JVM restarts, but it does **not** persist HTTP cookies by itself. If the hosting application needs cookies to survive a restart (for example, to keep a user logged in), the container must install a suitable `java.net.CookieHandler`.
-
-For convenience, Quick Question provides a simple persistent cookie manager/storage implementation under `ste.ai.qq.cookies`:
-
-- `WebChatCookieManager` – a `java.net.CookieManager` that delegates to `WebChatCookieStore`.
-- `WebChatCookieStore` – a `java.net.CookieStore` that saves cookies as JSON and reloads them when created.
-
-Capabilities of the provided cookie manager/storage:
-
-- Reads previously saved cookies from disk when the store is instantiated.
-- Writes cookies to disk whenever the store is modified (add/remove/removeAll).
-- Skips expired cookies when saving and loading.
-- Stores cookies in a file named `cookies.json` inside the configured directory.
-- Registers a JVM shutdown hook to flush the current cookie state on normal exit.
-
-The demo application (`ste.ai.qq.demo.DemoApplication`) shows how to use this implementation by installing `WebChatCookieManager` at startup, using the same user data directory as the WebView local storage.
-
-> **Note:** The cookie manager is installed at JVM level through `CookieHandler.setDefault(...)`. Once installed, all HTTP requests made through the `java.net` API will use it.
+## Supported browsers and Systems
+`QuickQuestion' currently supports **Linux x86_64** systems and **Firefox* and
+**Chrome/Chrominium** as browsers.
 
 ## For developers
 
 ### Architecture overview
 
-Quick Question does not embed a browser directly inside the JavaFX scene graph. Instead, it runs the browser inside a **local VNC server** and embeds a **VNC client** (`VNCViewerFX`) that streams the remote desktop into the application UI.
+'QuickQuestion' does not embed a browser directly inside the JavaFX scene graph.
+Instead, it runs the browser inside a **local VNC server** and embeds a **VNC client**
+(`VNCViewerFX`) that streams the remote desktop into the application UI.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                        Host JavaFX Application                       │
-│                                                                       │
+│                        Host JavaFX Application                      │
+│                                                                     │
 │  ┌─────────────────┐    ┌───────────────────────────────────────┐   │
 │  │   Provider Bar  │    │          VNCViewerFX (client)         │   │
 │  │  [Anthropic]    │    │                                       │   │
 │  │  [ChatGPT]      │    │   (streams display :5 from localhost) │   │
 │  │  [Perplexity]   │    │                                       │   │
 │  └─────────────────┘    └───────────────────────────────────────┘   │
-│           │                          │                                │
-│           │ navigateTo(url)         │ RFB protocol                   │
-│           ▼                          ▼                                │
-│  ┌───────────────────────────────────────────────────────┐          │
-│  │                  WebChatService                        │          │
-│  │  - launches / stops the browser session                │          │
-│  │  - tracks the VNC server PID                           │          │
-│  │  - delegates to launch-browser.sh / stop-browser.sh    │          │
-│  └───────────────────────────────────────────────────────┘          │
+│           │                          │                              │
+│           │ navigateTo(url)          │ RFB protocol                 │
+│           ▼                          ▼                              │
+│  ┌────────────────────────────────────────────────────────┐         │
+│  │                  WebChatService                        │         │
+│  │  - launches / stops the browser session                │         │
+│  │  - tracks the VNC server PID                           │         │
+│  │  - delegates to launch-browser.sh / stop-browser.sh    │         │
+│  └────────────────────────────────────────────────────────┘         │
 └─────────────────────────────────────────────────────────────────────┘
                               │
                               │ executes
@@ -97,7 +84,7 @@ Quick Question does not embed a browser directly inside the JavaFX scene graph. 
                               ▼
                 ┌──────────────────────────┐
                 │    Xvnc (VNC server)     │
-                │    display :5, port 5905  │
+                │   display :5, port 5905  │
                 └──────────────────────────┘
                               │
                               ▼
@@ -109,15 +96,17 @@ Quick Question does not embed a browser directly inside the JavaFX scene graph. 
 
 ### VNC server
 
-The VNC server used is **TigerVNC** (`Xvnc`). It is responsible for creating a virtual X display (by default `:5`, TCP port `5905`) on which the browser runs. The `VNCViewerFX` component connects to `localhost:5905` and renders the remote desktop inside the JavaFX application.
+The VNC server used is **TigerVNC** (`Xvnc`). It is responsible for creating a
+virtual X display (by default `:5`, TCP port `5905`) on which the browser runs.
+The `VNCViewerFX` component connects to `localhost:5905` and renders the remote
+desktop inside the JavaFX application.
 
-`launch-browser.sh` looks for the `Xvnc` binary in the following order:
+`launch-browser.sh` looks for the `Xvnc` binary in a bundled TigerVNC
+distribution next to the extracted scripts:
+   `<dataDir>/quickquestion/tigervnc-<version>/usr/bin/Xvnc`
 
-1. A bundled TigerVNC distribution next to the extracted scripts:
-   `<dataDir>/quickquestion/tigervnc-1.16.2.x86_64/usr/bin/Xvnc`
-2. The system `PATH` (`Xvnc`).
-
-If neither is available, the script exits with an error.
+If Xvnc is not there already, `QuickQuestion` installs it from a stripped down
+version of TigerVNC v1.16.2.x86_64 bundled in the dependency `com.github.stefanofornari:mini-tigervnc`.
 
 ### Scripts and data locations
 
@@ -148,9 +137,15 @@ Because every navigation stops the previous session first, there is always at mo
 
 ### Why a real browser via VNC?
 
-Embedding a modern browser directly in JavaFX would require a toolkit that keeps pace with Chrome/Firefox/Edge releases, which is difficult in practice. JavaFX's built-in `WebView` uses an older WebKit version that cannot reliably render and interact with modern LLM web chat applications. Other embedded-browser options (e.g. JCEF) pull in large native dependencies and still lag behind the system browser.
+Embedding a modern browser directly in JavaFX would require a toolkit that keeps
+pace with Chrome/Firefox/Edge releases, which is difficult in practice. JavaFX's
+built-in `WebView` uses an older WebKit version that cannot reliably render and
+interact with modern LLM web chat applications. Other embedded-browser options
+(e.g. JCEF) pull in large native dependencies and still lag behind the system
+browser.
 
-By running the **system default browser** inside a local VNC session, Quick Question benefits from:
+By running the **system default browser** inside a local VNC session, `QuickQuestion`
+benefits from:
 
 - A **real, up-to-date browser** with full JavaScript, cookie, and security support.
 - **No WebKit/Chromium Embedded Framework version mismatch** — the host's browser is used as-is.

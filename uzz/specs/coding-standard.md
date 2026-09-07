@@ -1,7 +1,7 @@
 # Coding Standard
 
 ## Purpose
-This document defines the coding conventions for the Quick Question project.
+This document defines the coding conventions for the QuickQuestion project.
 
 ## General Principles
 - Prefer clear, readable, and maintainable code.

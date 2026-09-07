@@ -1,4 +1,4 @@
-# Quick Question User Stories Index
+# QuickQuestion User Stories Index
 
 This index lists the user stories derived from `uzz/specs/scope.md`.
 
@@ -16,7 +16,12 @@ Demo JavaFX application used to showcase the component and provide simple config
 - [US-000004](demo/US-000004) — Provide a demo application with simple configuration UI
 - [US-000005](demo/US-000005) — About Dialog
 - [US-000006](demo/US-000006) — Install Tiger VNC Server
-- [US-000005](demo/US-000008) — Show predefined providers
+- [US-000008](demo/US-000008) — Show predefined providers
+
+### NetBeans
+NetBeans IDE module embedding QuickQuestion via JFXPanel for in-IDE LLM access.
+
+- [US-000024](netbeans/US-000024) — Access QuickQuestion as an LLM helper inside the NetBeans IDE
 
 ## Scope Reference
 - [Scope Overview](../scope.md)
