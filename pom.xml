@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.stefanofornari</groupId>
     <artifactId>quick-question</artifactId>
-    <version>0.0.0</version>
+    <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>QuickQuestion</name>
 
@@ -11,7 +11,7 @@
         <connection>scm:git:https://github.com/stefanofornari/quick-question.git</connection>
         <developerConnection>scm:git:https://github.com/stefanofornari/quick-question.git</developerConnection>
         <url>https://github.com/stefanofornari/quick-question</url>
-        <tag>quick-question-0.0.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <developers>
