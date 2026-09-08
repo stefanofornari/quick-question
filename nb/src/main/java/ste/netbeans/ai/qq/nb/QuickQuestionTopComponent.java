@@ -106,7 +106,6 @@ public class QuickQuestionTopComponent extends TopComponent {
         setCursor(cursor());// hide the swing cursor
         Platform.runLater(() -> {
             if (webChat == null) {
-                System.out.println("CHECK!!!");
                 webChat = new WebChat();
                 final Scene scene = new Scene(webChat);
                 scene.getStylesheets().add(

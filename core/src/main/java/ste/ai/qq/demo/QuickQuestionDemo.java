@@ -15,6 +15,7 @@
  */
 package ste.ai.qq.demo;
 
+import ste.ai.qq.VNCServerInstaller;
 import atlantafx.base.theme.NordLight;
 import dev.dirs.ProjectDirectories;
 import java.io.IOException;

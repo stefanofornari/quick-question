@@ -49,7 +49,7 @@
         </dependency>
         <dependency>
             <groupId>com.github.stefanofornari</groupId>
-            <artifactId>tiger-vnc-mini</artifactId>
+            <artifactId>mini-tigervnc</artifactId>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
