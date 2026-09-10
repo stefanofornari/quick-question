@@ -8,7 +8,6 @@
 
 <fx:root
     xmlns:fx="http://javafx.com/javafx/1"
-    fx:controller="ste.ai.qq.WebChatController"
     fx:id="webChat"
     type="StackPane"
     stylesheets="@TopHidingToolBar.css"

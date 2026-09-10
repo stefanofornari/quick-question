@@ -85,18 +85,12 @@ public class QuickQuestionTopComponent extends TopComponent {
     @Override
     protected void componentClosed() {
         super.componentClosed();
-        /*
-        if (fxPanel != null) {
-            fxPanel.removeAll();
-            fxPanel = null;
-            webChat = null;
-        }*/
     }
 
     private void initFx() {
         if (fxPanel == null) {
             fxPanel = new JFXPanel();
-            Platform.setImplicitExit(false);
+            Platform.setImplicitExit(false);  // TODO: remove when using NetBeans JavaFX Toolkit
         }
 
         // ---

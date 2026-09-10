@@ -16,29 +16,61 @@
 package ste.ai.qq;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.logging.Logger;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.layout.StackPane;
 
 public class WebChat extends StackPane {
 
     final Logger log = Logger.getLogger(getClass().getName());
 
-    public final WebChatController controller;
+    final WebChatService service;
 
     public WebChat() {
+        this(new WebChatService());
+    }
+
+    protected WebChat(final WebChatService service) {
         log.finest(() -> "creating a new component");
+        if (service == null) {
+            throw new IllegalArgumentException("service cannot be null");
+        }
         final URL url = getClass().getResource("WebChat.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(url);
+        fxmlLoader.setController(this);
         fxmlLoader.setRoot(this);
 
         try {
             fxmlLoader.load();
-            this.controller = fxmlLoader.getController();
         } catch (IOException exception) {
             throw new RuntimeException("Failed to load " + url, exception);
         }
+
+        this.service = service;
+
+        showProvider(Provider.CHATGPT);
+
         log.finest(() -> "component created");
+    }
+
+    public void showProvider(final Provider provider) {
+        if (provider == null) {
+            throw new IllegalArgumentException("provider cannot be null");
+        }
+        try {
+            service.navigateTo(URI.create(provider.url).toURL());
+        } catch (final Exception e) {
+            throw new RuntimeException("Failed to navigate to " + provider.displayName, e);
+        }
+    }
+
+    @FXML
+    private void onSwitch(final ActionEvent action) {
+        showProvider(Provider.valueOf(((Node)action.getSource()).getId()));
     }
 }
