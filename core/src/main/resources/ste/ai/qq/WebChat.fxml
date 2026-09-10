@@ -15,7 +15,7 @@
     <!-- Background Viewer -->
     <!-- Centering wrapper: fills the full WebChat area and keeps the viewer centered at its pref size -->
     <StackPane maxWidth="-Infinity" maxHeight="-Infinity" StackPane.alignment="TOP_CENTER">
-        <VNCViewer fx:id="viewer" prefWidth="600" prefHeight="800" connect="AUTO" uri="vnc://localhost:5905" reconnectTimeout="3s"/>
+        <VNCViewer fx:id="viewer" connect="AUTO" uri="vnc://localhost:5905" reconnectTimeout="3s"/>
     </StackPane>
 
     <!-- Sliding Toolbar pinned to top and wrapped strictly to pref size -->

@@ -64,6 +64,9 @@ public class QuickQuestionTopComponent extends TopComponent {
 
     public static final String PREFERRED_ID = "ste_netbeans_qq_QuickQuestionTopComponent";
 
+    //
+    // A fully transparent cursor
+    //
     private static final java.awt.Cursor CURSOR_BLANK = Toolkit.getDefaultToolkit().createCustomCursor(
         new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "blank_cursor"
     );
@@ -73,7 +76,7 @@ public class QuickQuestionTopComponent extends TopComponent {
 
     public QuickQuestionTopComponent() {
         setName("QuickQuestion");
-        setToolTipText("Quick access to LLM chat interfaces inside NetBeans.");
+        setToolTipText("Quick access LLM WebChat");
     }
 
     @Override
@@ -101,6 +104,8 @@ public class QuickQuestionTopComponent extends TopComponent {
         Platform.runLater(() -> {
             if (webChat == null) {
                 webChat = new WebChat();
+                webChat.setPrefWidth(600);
+                webChat.setPrefHeight(800);
                 final Scene scene = new Scene(webChat);
                 scene.getStylesheets().add(
                     getClass().getResource("QuickQuestion.css").toExternalForm()

@@ -11,7 +11,7 @@
             <CustomTitleBar fx:id="titleBar" title="QuickQuestion Demo"/>
         </top>
         <center>
-            <WebChat fx:id="webChat"/>
+            <WebChat fx:id="webChat" prefWidth="600" prefHeight="800"/>
         </center>
     </BorderPane>
 
